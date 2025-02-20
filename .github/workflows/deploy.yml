@@ -1,0 +1,32 @@
+name: Deploy Static Website
+
+on:
+  push:
+    branches: [ main ] # Запускати workflow при push в гілку main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Build Docker image
+      run: docker build -t simple-website-image .
+
+    - name: Run Docker container (local verification)
+      run: docker run --rm -d -p 8080:80 simple-website-image
+      # --rm - автоматично видаляти контейнер після завершення
+
+    - name: Wait for website to be available (local verification)
+      run: sleep 10 # Зачекати трохи, щоб контейнер запустився
+      # (У реальних проєктах потрібна більш надійна перевірка доступності)
+
+    - name: Check website availability (local verification)
+      run: curl http://localhost:8080 || exit 1
+      # Перевірити, що веб-сайт віддає HTTP 200 OK
+      # exit 1 - зупинити workflow, якщо перевірка не вдалася
+
+    - name: Output Success Message
+      run: echo "Веб-сайт успішно контейнеризовано та локально перевірено!"
